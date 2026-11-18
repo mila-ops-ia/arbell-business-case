@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business case arbell</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0b0f; --surface: #14161d; --surface-2: #1a1d26; --border: #262932; --border-strong: #363b48;
+  --text-hi: #f4f4f6; --text-mid: #b5b8c3; --text-low: #9498a6;
+  --gold: #38bdf8; --emerald: #34d399; --rose: #fb7185; --orange: #fb923c; --cyan: #38bdf8; --teal: #2dd4bf; --violet: #a78bfa; --amber: #fbbf24;
+}
+* { box-sizing: border-box; }
+body { margin:0; font-family:'Inter',sans-serif; background:var(--bg); color:var(--text-hi); }
+h1,h2,h3,.font-display{ font-family:'Sora',sans-serif; }
+.font-mono{ font-family:'JetBrains Mono',monospace; }
+.wrap{ max-width:1180px; margin:0 auto; padding:26px 16px 60px; }
+.card{ background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+.text-hi{ color:var(--text-hi); } .text-mid{ color:var(--text-mid); } .text-low{ color:var(--text-low); }
+header{ border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:40; }
+.headbar{ max-width:1180px; margin:0 auto; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+.brand{ display:flex; align-items:baseline; gap:10px; }
+.brand h1{ font-size:16px; font-weight:600; margin:0; letter-spacing:-.2px; }
+.brand span{ font-size:10px; color:var(--text-low); }
+.segmented{ display:inline-flex; padding:3px; background:var(--surface-2); border:1px solid var(--border); border-radius:999px; gap:2px; flex-wrap:wrap; }
+.seg-item{ padding:7px 13px; border-radius:999px; font-size:12px; font-weight:600; color:var(--text-mid); white-space:nowrap; cursor:pointer; border:none; background:transparent; transition:all .15s; font-family:'Inter',sans-serif; }
+.seg-item.active{ background:var(--gold); color:#071a26; }
+.seg-item:not(.active):hover{ color:var(--text-hi); }
+.kpi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media (max-width:760px){ .kpi-row{ grid-template-columns:repeat(2,1fr); } }
+.chart-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width:760px){ .chart-grid{ grid-template-columns:1fr; } }
+.chart-box{ height:280px; position:relative; }
+@media (max-width:760px){ .chart-box{ height:300px; } }
+.kpi-label{ font-size:11px; color:var(--text-low); }
+.kpi-val{ font-size:19px; font-weight:700; font-family:'JetBrains Mono',monospace; margin-top:3px; }
+.kpi-primary{ padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--border); text-align:center; }
+.kpi-primary .kpi-label{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+.kpi-primary .kpi-val{ font-size:26px; margin-top:4px; }
+.kpi-sub{ font-size:10px; color:var(--text-low); font-family:'JetBrains Mono',monospace; margin-top:2px; }
+details.row{ border-bottom:1px solid var(--border); }
+details.row:last-child{ border-bottom:none; }
+details.row summary{ list-style:none; cursor:pointer; padding:12px 4px; display:flex; align-items:center; gap:10px; }
+details.row summary::-webkit-details-marker{ display:none; }
+.row-caret{ width:16px; height:16px; flex-shrink:0; color:var(--text-low); transition:transform .15s; }
+details.row[open] .row-caret{ transform:rotate(90deg); color:var(--gold); }
+.row-title{ flex:1; font-size:13px; color:var(--text-hi); }
+.row-result{ font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:600; text-align:right; white-space:nowrap; }
+.row-detail{ padding:2px 4px 16px 30px; }
+.formula-line{ display:flex; justify-content:space-between; gap:14px; font-size:12px; padding:5px 0; border-top:1px dashed var(--border); }
+.formula-line:first-child{ border-top:none; }
+.formula-line .f-label{ color:var(--text-low); }
+.formula-line .f-val{ font-family:'JetBrains Mono',monospace; color:var(--text-mid); text-align:right; }
+.un-kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+@media (max-width:760px){ .un-kpi-grid { grid-template-columns:repeat(2,1fr); } }
+.un-kpi-card { background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:14px 12px; text-align:center; display:flex; flex-direction:column; justify-content:center; }
+.un-kpi-label { font-size:11px; color:var(--text-low); font-weight:500; }
+.un-kpi-val { font-size:22px; font-weight:700; font-family:'JetBrains Mono',monospace; margin:4px 0 2px; }
+.un-kpi-sub { font-size:10px; color:var(--text-low); }
+.section-title{ font-size:11px; font-weight:600; color:var(--text-mid); text-transform:uppercase; letter-spacing:.04em; }
+.dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+.input-plain{ background:var(--bg); border:1px solid var(--border-strong); color:var(--text-hi); border-radius:8px; padding:6px 10px; font-size:13px; font-family:'JetBrains Mono',monospace; width:100%; }
+.input-plain:focus{ outline:none; border-color:var(--gold); }
+.input-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+@media (max-width:760px){ .input-grid{ grid-template-columns:repeat(2,1fr); } }
+.input-grid label{ display:block; font-size:11px; color:var(--text-low); margin-bottom:4px; }
+.mini-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
+.mini-table th{ text-align:right; color:var(--text-low); font-weight:600; font-size:10px; text-transform:uppercase; padding:6px 8px; border-bottom:1px solid var(--border); white-space:nowrap; }
+.mini-table th:first-child, .mini-table td:first-child{ text-align:left; }
+.mini-table td{ text-align:right; padding:6px 8px; font-family:'JetBrains Mono',monospace; color:var(--text-mid); border-bottom:1px solid var(--border); white-space:nowrap; }
+.mini-table td:first-child{ color:var(--text-hi); font-family:'Inter',sans-serif; white-space:normal; }
+.mini-table th.t, .mini-table td.t{ text-align:left; font-family:'Inter',sans-serif; white-space:normal; min-width:160px; }
+.mini-table tr.hl td{ color:var(--gold); font-weight:600; }
+.mini-table tr.neg td.v{ color:var(--rose); }
+.pill{ display:inline-block; font-size:10px; font-weight:600; padding:3px 8px; border-radius:999px; border:1px solid var(--border-strong); color:var(--text-mid); font-family:'JetBrains Mono',monospace; }
+.pill.warn{ border-color:rgba(251,191,36,.5); color:var(--amber); }
+.pill.ok{ border-color:rgba(52,211,153,.5); color:var(--emerald); }
+.note{ font-size:12px; color:var(--text-mid); line-height:1.55; }
+.note b{ color:var(--text-hi); }
+.points li{ font-size:12.5px; color:var(--text-mid); line-height:1.55; margin-bottom:8px; }
+.points li b{ color:var(--text-hi); }
+.space > * + *{ margin-top:16px; }
+h2.sec{ font-size:19px; margin:0 0 4px; }
+.sub{ font-size:12px; color:var(--text-low); margin:0; }
+</style>
+</head>
+<body>
+<header>
+  <div class="headbar">
+    <div class="brand">
+      <h1>Business case arbell</h1>
+      <span>Experta vs Líder · Paraguay · 2026</span>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+      <div class="segmented" id="mainTabs">
+        <button class="seg-item active" data-tab="resumen">Resumen</button>
+        <button class="seg-item" data-tab="experta">Experta</button>
+        <button class="seg-item" data-tab="lider">Líder</button>
+        <button class="seg-item" data-tab="proyeccion">12 meses</button>
+        <button class="seg-item" data-tab="precios">Precios</button>
+        <button class="seg-item" data-tab="claves">Claves</button>
+      </div>
+      <div class="segmented" id="curTabs" title="Moneda">
+        <button class="seg-item active" data-cur="ARS">ARS</button>
+        <button class="seg-item" data-cur="GS">Gs</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- RESUMEN -->
+<section id="view-resumen" class="space">
+  <div>
+    <h2 class="sec font-display">Qué pasa con cada producto que vendés</h2>
+    <p class="sub">Producto promedio del catálogo 6-2026. Cambiá los supuestos en las pestañas Experta y Precios: todo el tablero se recalcula.</p>
+  </div>
+  <div class="card" style="padding:18px;">
+    <div class="un-kpi-grid">
+      <div class="un-kpi-card"><div class="un-kpi-label">Tu ganancia por producto</div><div class="un-kpi-val" style="color:var(--emerald);" id="r_g"></div><div class="un-kpi-sub">30 % del precio de venta</div></div>
+      <div class="un-kpi-card"><div class="un-kpi-label">Le pagás a tu Distribuidora</div><div class="un-kpi-val text-hi" id="r_psd"></div><div class="un-kpi-sub">PSD, 70 % del precio</div></div>
+      <div class="un-kpi-card"><div class="un-kpi-label">Un envío equivale a</div><div class="un-kpi-val" style="color:var(--rose);" id="r_envio"></div><div class="un-kpi-sub" id="r_envio_sub"></div></div>
+      <div class="un-kpi-card"><div class="un-kpi-label">Catálogo vigente</div><div class="un-kpi-val" style="color:var(--amber); font-size:16px;">P5 · Paraguay</div><div class="un-kpi-sub">Argentina ya está en P6 (6/11 al 4/1)</div></div>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="card" style="padding:18px;">
+      <div class="section-title" style="margin-bottom:10px;">Neto por mes según escenario</div>
+      <div class="chart-box"><canvas id="chartEsc"></canvas></div>
+    </div>
+    <div class="card" style="padding:18px;">
+      <div class="section-title" style="margin-bottom:10px;">Acumulado a 12 meses: solo Experta vs Experta que arma equipo</div>
+      <div class="chart-box"><canvas id="chartAcum"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px;">
+    <div class="section-title" style="margin-bottom:10px;">Comparativa Experta vs Líder</div>
+    <div style="overflow-x:auto;"><table class="mini-table" id="r_tabla"></table></div>
+  </div>
+</section>
+
+<!-- EXPERTA -->
+<section id="view-experta" class="space" style="display:none;">
+  <div class="card" style="padding:20px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+      <span class="dot" style="background:var(--emerald);"></span>
+      <h3 class="font-display" style="font-size:17px; margin:0;">Experta: venta personal</h3>
+      <span class="pill">30 % sobre PVP</span>
+    </div>
+    <div class="input-grid">
+      <div><label>Unidades por período (2 meses)</label><input type="number" id="e_u" class="input-plain" value="30" min="0" step="1"></div>
+      <div><label>Envíos por período</label><input type="number" id="e_env" class="input-plain" value="4" min="0" step="1"></div>
+      <div><label>% que queda sin vender</label><input type="number" id="e_unsold" class="input-plain" value="5" min="0" step="1"></div>
+      <div><label>% de fiado que no cobrás</label><input type="number" id="e_mora" class="input-plain" value="3" min="0" step="1"></div>
+    </div>
+  </div>
+  <div class="card" style="padding:20px;">
+    <div class="kpi-primary">
+      <div class="kpi-label">Neto por mes</div>
+      <div class="kpi-val" style="color:var(--emerald);" id="e_mes"></div>
+      <div class="kpi-sub" id="e_mes_sub"></div>
+    </div>
+    <div class="kpi-row">
+      <div><div class="kpi-label">Facturás (PVP)</div><div class="kpi-val text-hi" id="e_fact"></div></div>
+      <div><div class="kpi-label">Ganancia bruta</div><div class="kpi-val" style="color:var(--gold);" id="e_bruta"></div></div>
+      <div><div class="kpi-label">Costos y pérdidas</div><div class="kpi-val" style="color:var(--rose);" id="e_cost"></div></div>
+      <div><div class="kpi-label">Premio del período</div><div class="kpi-val" style="color:var(--amber); font-size:14px;" id="e_premio"></div></div>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="card" style="padding:20px;">
+      <div class="section-title" style="margin-bottom:6px; text-align:center;">Desglose de cálculo</div>
+      <div id="e_rows"></div>
+    </div>
+    <div class="card" style="padding:18px;">
+      <div class="section-title" style="margin-bottom:10px;">De cada 100 que cobra tu clienta, a dónde van</div>
+      <div class="chart-box"><canvas id="chart100"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="padding:20px;">
+    <div class="section-title" style="margin-bottom:10px;">Escenarios de actividad (con tus supuestos de envíos y pérdidas)</div>
+    <div style="overflow-x:auto;"><table class="mini-table" id="e_tabla"></table></div>
+  </div>
+  <div class="card" style="padding:20px;">
+    <div class="section-title" style="margin-bottom:10px;">Sensibilidad: qué mueve más el resultado</div>
+    <div style="overflow-x:auto;"><table class="mini-table" id="e_sens"></table></div>
+    <p class="note" style="margin:10px 0 0;">La variable que más pesa no es cuánto vendés sino cuánto te queda sin vender y sin cobrar, y cuántos envíos hacés. Vender a pedido, cobrar al entregar y juntar pedidos por cierre protege el 30 %.</p>
+  </div>
+</section>
+
+<!-- LÍDER -->
+<section id="view-lider" class="space" style="display:none;">
+  <div class="card" style="padding:20px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+      <span class="dot" style="background:var(--violet);"></span>
+      <h3 class="font-display" style="font-size:17px; margin:0;">Líder: tu venta + porcentaje sobre tu equipo</h3>
+      <span class="pill warn">confirmar con tu Distribuidora</span>
+    </div>
+    <div class="input-grid">
+      <div><label>Expertas activas en tu equipo</label><input type="number" id="l_n" class="input-plain" value="10" min="0" step="1"></div>
+      <div><label>Unidades por Experta por período</label><input type="number" id="l_perx" class="input-plain" value="40" min="0" step="1"></div>
+      <div><label>Tus unidades propias por período</label><input type="number" id="l_prop" class="input-plain" value="30" min="0" step="1"></div>
+      <div><label>Escalones (UP → %)</label><div class="pill" style="display:block; text-align:center; padding:7px;">200→5 · 400→10 · 600→12 · 800→15</div></div>
+    </div>
+  </div>
+  <div class="card" style="padding:20px;">
+    <div class="kpi-primary">
+      <div class="kpi-label">Total por mes como Líder</div>
+      <div class="kpi-val" style="color:var(--violet);" id="l_mes"></div>
+      <div class="kpi-sub" id="l_mes_sub"></div>
+    </div>
+    <div class="kpi-row">
+      <div><div class="kpi-label">Unidades del equipo (UP)</div><div class="kpi-val text-hi" id="l_up"></div></div>
+      <div><div class="kpi-label">% que te corresponde</div><div class="kpi-val" style="color:var(--gold);" id="l_pct"></div></div>
+      <div><div class="kpi-label">Ganancia grupal por período</div><div class="kpi-val" style="color:var(--violet);" id="l_grup"></div></div>
+      <div><div class="kpi-label">Tu venta personal (neta)</div><div class="kpi-val" style="color:var(--emerald);" id="l_pers"></div></div>
+    </div>
+  </div>
+  <div class="chart-grid">
+    <div class="card" style="padding:18px;">
+      <div class="section-title" style="margin-bottom:10px;">Ganancia grupal por período según tamaño del equipo</div>
+      <div class="chart-box"><canvas id="chartLider"></canvas></div>
+    </div>
+    <div class="card" style="padding:20px;">
+      <div class="section-title" style="margin-bottom:6px; text-align:center;">Desglose de cálculo</div>
+      <div id="l_rows"></div>
+    </div>
+  </div>
+  <div class="card" style="padding:20px;">
+    <div class="section-title" style="margin-bottom:10px;">Matriz: equipo × productividad (total por mes, incluye tus propias)</div>
+    <div style="overflow-x:auto;"><table class="mini-table" id="l_matriz"></table></div>
+    <p class="note" style="margin:10px 0 0;"><b>Ser Líder paga por volumen, no por cantidad de gente.</b> Con 5 Expertas que venden 20 no llegás a 200 UP y la ganancia grupal es cero. El salto llega con 10 Expertas activas vendiendo 40: ahí duplicás lo que ganás sola. Costos que no están en el material: tiempo de reclutar y acompañar, dependencia de que otras cumplan y el riesgo de adelantar producto o envíos a tu equipo.</p>
+  </div>
+</section>
+
+<!-- PROYECCIÓN -->
+<section id="view-proyeccion" class="space" style="display:none;">
+  <div class="card" style="padding:20px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+      <span class="dot" style="background:var(--gold);"></span>
+      <h3 class="font-display" style="font-size:17px; margin:0;">Proyección a 12 meses (6 períodos)</h3>
+    </div>
+    <div class="input-grid">
+      <div><label>Tus unidades en el período 1</label><input type="number" id="p_u0" class="input-plain" value="20" min="0" step="1"></div>
+      <div><label>Crecés por período (unidades)</label><input type="number" id="p_inc" class="input-plain" value="10" min="0" step="1"></div>
+      <div><label>Tope de unidades propias</label><input type="number" id="p_max" class="input-plain" value="60" min="0" step="1"></div>
+      <div><label>Unidades por Experta del equipo</label><input type="number" id="p_perx" class="input-plain" value="30" min="0" step="1"></div>
+      <div><label>Período en que armás equipo</label><input type="number" id="p_start" class="input-plain" value="3" min="1" max="6" step="1"></div>
+      <div><label>Expertas al arrancar</label><input type="number" id="p_n0" class="input-plain" value="5" min="0" step="1"></div>
+      <div><label>Expertas al final del año</label><input type="number" id="p_n1" class="input-plain" value="10" min="0" step="1"></div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px;">
+    <div class="un-kpi-grid">
+      <div class="un-kpi-card"><div class="un-kpi-label">Camino A · solo Experta</div><div class="un-kpi-val" style="color:var(--emerald);" id="p_totA"></div><div class="un-kpi-sub" id="p_totA_sub"></div></div>
+      <div class="un-kpi-card"><div class="un-kpi-label">Camino B · Experta + equipo</div><div class="un-kpi-val" style="color:var(--violet);" id="p_totB"></div><div class="un-kpi-sub" id="p_totB_sub"></div></div>
+      <div class="un-kpi-card"><div class="un-kpi-label">Diferencia en el año</div><div class="un-kpi-val" style="color:var(--gold);" id="p_dif"></div><div class="un-kpi-sub">lo que vale armar el equipo</div></div>
+      <div class="un-kpi-card"><div class="un-kpi-label">Unidades propias en el año</div><div class="un-kpi-val text-hi" id="p_units"></div><div class="un-kpi-sub">sumando los 6 períodos</div></div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px;">
+    <div class="section-title" style="margin-bottom:10px;">Neto por período</div>
+    <div class="chart-box"><canvas id="chartProy"></canvas></div>
+  </div>
+  <div class="card" style="padding:20px;">
+    <div class="section-title" style="margin-bottom:10px;">Detalle por período</div>
+    <div style="overflow-x:auto;"><table class="mini-table" id="p_tabla"></table></div>
+  </div>
+</section>
+
+<!-- PRECIOS -->
+<section id="view-precios" class="space" style="display:none;">
+  <div class="card" style="padding:20px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+      <span class="dot" style="background:var(--amber);"></span>
+      <h3 class="font-display" style="font-size:17px; margin:0;">Precios, tipo de cambio y supuestos base</h3>
+    </div>
+    <div class="input-grid">
+      <div><label>PVP promedio (ARS)</label><input type="number" id="x_pvp" class="input-plain" value="11571" step="1"></div>
+      <div><label>PSD promedio (ARS)</label><input type="number" id="x_psd" class="input-plain" value="8100" step="1"></div>
+      <div><label>PSA promedio (ARS)</label><input type="number" id="x_psa" class="input-plain" value="5265" step="1"></div>
+      <div><label>Guaraníes por peso (FX)</label><input type="number" id="x_fx" class="input-plain" value="4.02" step="0.01"></div>
+      <div><label>Costo del envío (Gs)</label><input type="number" id="x_envio" class="input-plain" value="30000" step="1000"></div>
+    </div>
+    <p class="note" style="margin:12px 0 0;">Los guaraníes de este tablero son conversión al cambio del 19/11/2026 (investing.com). <b>El precio real en Gs es el del PDF de tu Distribuidora.</b> Cuando lo tengas, cargá acá el PVP y el PSD en pesos equivalentes, o cambiá el FX, y todo se recalcula. La proporción (30 % tuyo) no cambia.</p>
+  </div>
+  <div class="card" style="padding:20px;">
+    <div class="section-title" style="margin-bottom:10px;">La unidad económica</div>
+    <div style="overflow-x:auto;"><table class="mini-table" id="x_unidad"></table></div>
+  </div>
+  <div class="card" style="padding:20px;">
+    <div class="section-title" style="margin-bottom:10px;">Precios de referencia del catálogo argentino 6-2026 (PVP)</div>
+    <div style="overflow-x:auto;"><table class="mini-table" id="x_prod"></table></div>
+    <p class="note" style="margin:10px 0 0;">Tu ganancia por cada uno es el 30 % del PVP. Los que no tienen precio están en el PDF de la Distribuidora.</p>
+  </div>
+  <div class="card" style="padding:20px;">
+    <div class="section-title" style="margin-bottom:10px;">Desafíos del Período 6 argentino (confirmar si corren en Paraguay)</div>
+    <div style="overflow-x:auto;"><table class="mini-table" id="x_desafios"></table></div>
+  </div>
+</section>
+
+<!-- CLAVES -->
+<section id="view-claves" class="space" style="display:none;">
+  <div class="chart-grid">
+    <div class="card" style="padding:20px;">
+      <div class="section-title" style="margin-bottom:10px;">Puntos clave para decidir</div>
+      <ol class="points" style="padding-left:18px; margin:0;">
+        <li><b>No hay inversión inicial ni pérdida posible si vendés a pedido.</b> Pedís lo que ya vendiste, cobrás al entregar, le pagás a tu Distribuidora. El único costo fijo es el envío.</li>
+        <li><b>El envío es tu costo número uno.</b> 30.000 Gs son la ganancia de 2 productos. Un envío por cierre, no uno por clienta. Si tu Distribuidora viaja, retirá en mano.</li>
+        <li><b>Los premios se miden en PSD</b>, no en lo que cobrás. $160.000 PSD para la bienvenida son 20 productos; $243.000 para Plata son 30.</li>
+        <li><b>Paraguay va un período atrás.</b> Lo que arbell Argentina lanza hoy llega a ustedes en dos meses. Ya sabés qué viene.</li>
+        <li><b>Tipo de cambio.</b> Ganás en guaraníes. Si el peso se devalúa, tus Gs valen más pesos. No toca tu 30 %, toca cómo lo leés.</li>
+        <li><b>Experta primero, Líder después.</b> El porcentaje grupal se nota desde 200 UP. Antes de reclutar, demostrá que vos vendés 30 o más por período.</li>
+        <li><b>La oferta de tu Distribuidora de actualizar el PDF de precios</b> es tu puerta de entrada: catálogo antes que nadie y relación directa con la Distribuidora.</li>
+        <li><b>Constancia, no picos.</b> Los desafíos piden pedido en cada cierre y en la Actividad Temprana siguiente.</li>
+      </ol>
+    </div>
+    <div class="space">
+      <div class="card" style="padding:20px;">
+        <div class="section-title" style="margin-bottom:10px;">Preguntas para tu Distribuidora</div>
+        <ol class="points" style="padding-left:18px; margin:0;">
+          <li>¿Qué catálogo está vigente para nosotras y hasta cuándo? ¿Fechas de cierre?</li>
+          <li>¿Qué desafíos corren en Paraguay: bienvenida, Crecé y Ganá, 6x5 Inspiraciones?</li>
+          <li>¿Cómo me doy de alta en Mi arbell para cargar pedidos?</li>
+          <li>¿Cómo y cuándo te pago? ¿Hay pedido mínimo?</li>
+          <li>¿Me pasás las ofertas semanales y los Packs Ganancia Extra?</li>
+          <li>¿Cómo manejamos cambios o devoluciones?</li>
+          <li>¿Querés que te actualice los precios del PDF cada dos meses?</li>
+        </ol>
+      </div>
+      <div class="card" style="padding:20px;">
+        <div class="section-title" style="margin-bottom:10px;">Fuentes y supuestos</div>
+        <p class="note" style="margin:0;">Carpeta Distribuidores 6-2026, Por qué emprender con arbell 6-2026 e Información de Producto 6-26 (SharePoint de Ventas). Audio y mensajes de la Distribuidora del 18/11/2026. FX investing.com 19/11/2026. Escalones de Líder: 5 % a 200 UP, 10 % a 400, 12 % a 600, 15 % a 800 sobre venta grupal en PSD. Modelo: 4 envíos por período, 5 % sin vender, 3 % de fiado incobrable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+// ---------- Estado ----------
+const S = {
+  cur: 'ARS',
+  pvp: 11571, psd: 8100, psa: 5265, fx: 4.02, envioGs: 30000,
+  e: { u: 30, env: 4, unsold: 5, mora: 3 },
+  l: { n: 10, perx: 40, prop: 30 },
+  p: { u0: 20, inc: 10, max: 60, perx: 30, start: 3, n0: 5, n1: 10 },
+};
+const TIERS = [[200, .05], [400, .10], [600, .12], [800, .15]];
+const PREMIOS = [[648000, 'Platino: dispenser + mantel bag + bolso picnic'], [405000, 'Oro: dispenser + mantel bag'], [243000, 'Plata: dispenser'], [160000, 'Crema de Ordeñe (bienvenida)']];
+
+// ---------- Formato ----------
+const nf = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 });
+function money(x) { return S.cur === 'ARS' ? '$' + nf.format(Math.round(x)) : 'Gs ' + nf.format(Math.round(x * S.fx)); }
+function both(x) { return '$' + nf.format(Math.round(x)) + ' · Gs ' + nf.format(Math.round(x * S.fx)); }
+function pct(x) { return Math.round(x * 100) + ' %'; }
+function el(id) { return document.getElementById(id); }
+function set(id, v) { el(id).textContent = v; }
+
+// ---------- Modelo ----------
+function G() { return S.pvp - S.psd; }
+function envioARS() { return S.envioGs / S.fx; }
+function experta(u, env = S.e.env, unsold = S.e.unsold, mora = S.e.mora) {
+  const fact = u * S.pvp, pago = u * S.psd, bruta = u * G();
+  const envios = env * envioARS(), stock = unsold / 100 * u * S.psd, fiado = mora / 100 * u * S.pvp;
+  const costos = envios + stock + fiado;
+  return { u, fact, pago, bruta, envios, stock, fiado, costos, neto: bruta - costos };
+}
+function premio(u) { const psd = u * S.psd; for (const [th, t] of PREMIOS) if (psd >= th) return t; return 'Ninguno'; }
+function tier(up) { let p = 0; for (const [th, t] of TIERS) if (up >= th) p = t; return p; }
+function lider(n, perx, prop) {
+  const up = n * perx, p = tier(up), grup = up * S.psd * p, pers = experta(prop);
+  return { up, p, grup, pers, total: grup + pers.neto };
+}
+function proyeccion() {
+  const P = S.p, rows = []; let totA = 0, totB = 0, units = 0;
+  for (let i = 1; i <= 6; i++) {
+    const u = Math.min(P.max, P.u0 + P.inc * (i - 1));
+    const e = experta(u);
+    let n = 0;
+    if (i >= P.start) { const span = 6 - P.start; n = span <= 0 ? P.n1 : Math.round(P.n0 + (P.n1 - P.n0) * (i - P.start) / span); }
+    const up = n * P.perx, p = tier(up), grup = up * S.psd * p;
+    totA += e.neto; totB += e.neto + grup; units += u;
+    rows.push({ i, u, neto: e.neto, n, up, p, grup, A: e.neto, B: e.neto + grup });
+  }
+  return { rows, totA, totB, units };
+}
+
+// ---------- Render helpers ----------
+const caret = '<svg class="row-caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3l5 5-5 5"/></svg>';
+function row(title, result, lines, color) {
+  return `<details class="row"><summary>${caret}<span class="row-title">${title}</span><span class="row-result" style="color:${color || 'var(--text-hi)'}">${result}</span></summary>
+  <div class="row-detail">${lines.map(([a, b]) => `<div class="formula-line"><span class="f-label">${a}</span><span class="f-val">${b}</span></div>`).join('')}</div></details>`;
+}
+function table(id, head, rows, textCols = []) {
+  const t = el(id);
+  const th = (h, i) => `<th${textCols.includes(i) ? ' class="t"' : ''}>${h}</th>`;
+  const td = (c, i) => `<td class="${i > 0 ? 'v' : ''}${textCols.includes(i) ? ' t' : ''}">${c}</td>`;
+  t.innerHTML = '<thead><tr>' + head.map(th).join('') + '</tr></thead><tbody>' +
+    rows.map(r => `<tr class="${r.cls || ''}">` + r.c.map(td).join('') + '</tr>').join('') + '</tbody>';
+}
+
+// ---------- Charts ----------
+Chart.defaults.color = '#9498a6'; Chart.defaults.borderColor = '#262932'; Chart.defaults.font.family = 'Inter';
+const charts = {};
+function mk(id, cfg) { if (charts[id]) charts[id].destroy(); charts[id] = new Chart(el(id), cfg); }
+const tipMoney = { callbacks: { label: c => ` ${c.dataset.label || ''}: ${money(c.parsed.y ?? c.parsed.x)}` } };
+const axisMoney = { ticks: { callback: v => (S.cur === 'ARS' ? '$' : 'Gs ') + nf.format(S.cur === 'ARS' ? v : v * S.fx) }, grid: { color: '#1f222b' } };
+
+// ---------- Render ----------
+function render() {
+  const g = G(), envA = envioARS();
+  // Resumen
+  set('r_g', money(g)); set('r_psd', money(S.psd)); set('r_envio', (envA / g).toFixed(1) + ' productos');
+  set('r_envio_sub', money(envA) + ' por envío, lo paga quien recibe');
+  const escU = [15, 30, 60, 120, 240], escN = ['Arranque 15', 'Base 30', 'Crecimiento 60', 'Consolidada 120', 'Material 240'];
+  const escV = escU.map(u => experta(u).neto / 2);
+  const ldr = [lider(5, 40, 30), lider(10, 40, 30), lider(20, 40, 30)];
+  mk('chartEsc', { type: 'bar', data: { labels: [...escN, 'Líder 5×40', 'Líder 10×40', 'Líder 20×40'], datasets: [{ label: 'Neto por mes', data: [...escV, ...ldr.map(l => l.total / 2)], backgroundColor: [...escU.map(() => '#34d399'), '#a78bfa', '#a78bfa', '#a78bfa'], borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tipMoney }, scales: { y: axisMoney, x: { grid: { display: false }, ticks: { font: { size: 10 } } } } } });
+  const pr = proyeccion(); let a = 0, b = 0;
+  const acumA = pr.rows.map(r => a += r.A), acumB = pr.rows.map(r => b += r.B);
+  mk('chartAcum', { type: 'line', data: { labels: pr.rows.map(r => 'P' + r.i), datasets: [
+    { label: 'Solo Experta', data: acumA, borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,.15)', fill: true, tension: .3 },
+    { label: 'Experta + equipo', data: acumB, borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,.15)', fill: true, tension: .3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: tipMoney }, scales: { y: axisMoney, x: { grid: { display: false } } } } });
+  table('r_tabla', ['Escenario', 'Neto por mes', 'Neto por período', 'Qué tenés que lograr', 'Riesgo principal'], [
+    { c: ['Experta arranque (15 u)', money(experta(15).neto / 2), money(experta(15).neto), '2 ventas por semana', 'El envío se come la ganancia'] },
+    { c: ['Experta base (30 u)', money(experta(30).neto / 2), money(experta(30).neto), '4 ventas por semana', 'Fiado y stock parado'], cls: 'hl' },
+    { c: ['Experta crecimiento (60 u)', money(experta(60).neto / 2), money(experta(60).neto), '7 ventas por semana, cartera de 30 clientas', 'Tiempo'] },
+    { c: ['Líder 5 Expertas × 40 u + 30 propias', money(ldr[0].total / 2), money(ldr[0].total), '5 personas activas vendiendo bien', 'No llegar a 200 UP'] },
+    { c: ['Líder 10 Expertas × 40 u + 30 propias', money(ldr[1].total / 2), money(ldr[1].total), '10 personas activas', 'Mantener la actividad del equipo'] },
+    { c: ['Líder 20 Expertas × 40 u + 30 propias', money(ldr[2].total / 2), money(ldr[2].total), '20 personas activas', 'Trabajo de tiempo completo'] },
+  ], [3, 4]);
+
+  // Experta
+  const e = experta(S.e.u);
+  set('e_mes', money(e.neto / 2));
+  set('e_mes_sub', (S.cur === 'ARS' ? 'Gs ' + nf.format(Math.round(e.neto / 2 * S.fx)) : '$' + nf.format(Math.round(e.neto / 2))) + ' por mes · ' + money(e.neto) + ' por período');
+  set('e_fact', money(e.fact)); set('e_bruta', money(e.bruta)); set('e_cost', '-' + money(e.costos)); set('e_premio', premio(S.e.u));
+  el('e_rows').innerHTML =
+    row('Ganancia bruta', money(e.bruta), [['Unidades × (PVP − PSD)', `${S.e.u} × (${money(S.pvp)} − ${money(S.psd)})`], ['Margen sobre PVP', pct(g / S.pvp)], ['Margen sobre lo que invertís', pct(g / S.psd)]], 'var(--gold)') +
+    row('Envíos', '-' + money(e.envios), [['Envíos × costo', `${S.e.env} × ${money(envA)}`], ['Equivale a', (e.envios / g).toFixed(1) + ' productos de ganancia']], 'var(--rose)') +
+    row('Stock sin vender', '-' + money(e.stock), [['% × unidades × PSD', `${S.e.unsold} % × ${S.e.u} × ${money(S.psd)}`]], 'var(--rose)') +
+    row('Fiado incobrable', '-' + money(e.fiado), [['% × unidades × PVP', `${S.e.mora} % × ${S.e.u} × ${money(S.pvp)}`]], 'var(--rose)') +
+    row('Neto por período', money(e.neto), [['Bruta − costos', `${money(e.bruta)} − ${money(e.costos)}`], ['Por mes', money(e.neto / 2)], ['Por producto vendido', money(e.neto / Math.max(1, S.e.u))]], 'var(--emerald)') +
+    row('Punto de equilibrio por envío', (envA / g).toFixed(1) + ' u', [['Costo del envío ÷ ganancia por producto', `${money(envA)} ÷ ${money(g)}`], ['Lectura', 'Cada envío necesita al menos ' + Math.ceil(envA / g + 0.5) + ' productos para no perder plata']], 'var(--amber)');
+  const share = x => x / Math.max(1, e.fact) * 100;
+  mk('chart100', { type: 'bar', data: { labels: ['De cada 100'], datasets: [
+    { label: 'arbell (PSA)', data: [S.psa / S.pvp * 100], backgroundColor: '#363b48' },
+    { label: 'Distribuidora (PSD − PSA)', data: [(S.psd - S.psa) / S.pvp * 100], backgroundColor: '#9498a6' },
+    { label: 'Envíos', data: [share(e.envios)], backgroundColor: '#fb7185' },
+    { label: 'Sin vender', data: [share(e.stock)], backgroundColor: '#fb923c' },
+    { label: 'Fiado', data: [share(e.fiado)], backgroundColor: '#fbbf24' },
+    { label: 'Te queda', data: [Math.max(0, 30 - share(e.costos))], backgroundColor: '#34d399' }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.x.toFixed(1)}` } }, legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, scales: { x: { stacked: true, max: 100, grid: { color: '#1f222b' } }, y: { stacked: true, grid: { display: false } } } } });
+  table('e_tabla', ['Escenario', 'Unidades', 'Por semana', 'Facturás', 'Pagás a la Distribuidora', 'Bruta', 'Costos', 'Neto período', 'Neto mes', 'Premio'],
+    escU.map((u, i) => { const x = experta(u); return { c: [escN[i], u, (u / 8.7).toFixed(1), money(x.fact), money(x.pago), money(x.bruta), '-' + money(x.costos), money(x.neto), money(x.neto / 2), premio(u)], cls: u === S.e.u ? 'hl' : '' }; }));
+  const u = S.e.u, base = e.neto;
+  const sens = [
+    ['Modelo actual', base],
+    ['Hacés 2 envíos', experta(u, 2).neto], ['Hacés 8 envíos (uno por clienta)', experta(u, 8).neto],
+    ['Te queda 15 % sin vender', experta(u, S.e.env, 15).neto], ['10 % de fiado incobrable', experta(u, S.e.env, S.e.unsold, 10).neto],
+    ['Vendés todo y cobrás todo', experta(u, S.e.env, 0, 0).neto], ['Vendés 10 unidades más', experta(u + 10).neto],
+  ];
+  table('e_sens', ['Qué cambia', 'Neto por período', 'Diferencia'], sens.map(([k, v], i) => ({ c: [k, money(v), i === 0 ? '—' : (v - base >= 0 ? '+' : '-') + money(Math.abs(v - base))], cls: i === 0 ? 'hl' : (v < base ? 'neg' : '') })));
+  // premio: columna de texto
+  el('e_tabla').querySelectorAll('tr').forEach(tr => { const c = tr.lastElementChild; if (c) c.classList.add('t'); });
+
+  // Líder
+  const L = lider(S.l.n, S.l.perx, S.l.prop);
+  set('l_mes', money(L.total / 2)); set('l_mes_sub', money(L.total) + ' por período · ' + (S.cur === 'ARS' ? 'Gs ' + nf.format(Math.round(L.total / 2 * S.fx)) : '$' + nf.format(Math.round(L.total / 2))) + ' por mes');
+  set('l_up', L.up + ' UP'); set('l_pct', pct(L.p)); set('l_grup', money(L.grup)); set('l_pers', money(L.pers.neto));
+  el('l_rows').innerHTML =
+    row('Unidades del equipo (UP)', L.up + ' UP', [['Expertas × unidades por Experta', `${S.l.n} × ${S.l.perx}`], ['Venta grupal en PSD', money(L.up * S.psd)]]) +
+    row('Escalón alcanzado', pct(L.p), [['200 UP', '5 %'], ['400 UP', '10 %'], ['600 UP', '12 %'], ['800 UP', '15 %'], ['Te faltan para el próximo', (() => { const nx = TIERS.find(t => t[0] > L.up); return nx ? (nx[0] - L.up) + ' UP para ' + pct(nx[1]) : 'estás en el máximo'; })()]], 'var(--gold)') +
+    row('Ganancia grupal', money(L.grup), [['UP × PSD × %', `${L.up} × ${money(S.psd)} × ${pct(L.p)}`]], 'var(--violet)') +
+    row('Tu venta personal neta', money(L.pers.neto), [['Con tus supuestos de la pestaña Experta', `${S.l.prop} unidades, ${S.e.env} envíos`]], 'var(--emerald)') +
+    row('Total por período', money(L.total), [['Grupal + personal', `${money(L.grup)} + ${money(L.pers.neto)}`], ['Por mes', money(L.total / 2)]], 'var(--violet)');
+  const sizes = [5, 10, 15, 20];
+  mk('chartLider', { type: 'bar', data: { labels: sizes.map(n => n + ' Expertas'), datasets: [
+    { label: 'Equipo vende 20 c/u', data: sizes.map(n => lider(n, 20, S.l.prop).grup), backgroundColor: '#5b4fae', borderRadius: 6 },
+    { label: 'Equipo vende ' + S.l.perx + ' c/u (tu supuesto)', data: sizes.map(n => lider(n, S.l.perx, S.l.prop).grup), backgroundColor: '#a78bfa', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: tipMoney, legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, scales: { y: axisMoney, x: { grid: { display: false } } } } });
+  const perxs = [20, 30, 40, 50];
+  table('l_matriz', ['Equipo', ...perxs.map(p => p + ' u por Experta')], sizes.map(n => ({ c: [n + ' Expertas', ...perxs.map(p => { const x = lider(n, p, S.l.prop); return money(x.total / 2) + ' <span style="color:var(--text-low)">(' + pct(x.p) + ')</span>'; })], cls: n === S.l.n ? 'hl' : '' })));
+
+  // Proyección
+  set('p_totA', money(pr.totA)); set('p_totA_sub', money(pr.totA / 12) + ' por mes promedio');
+  set('p_totB', money(pr.totB)); set('p_totB_sub', money(pr.totB / 12) + ' por mes promedio');
+  set('p_dif', money(pr.totB - pr.totA)); set('p_units', pr.units + ' u');
+  mk('chartProy', { type: 'bar', data: { labels: pr.rows.map(r => 'Período ' + r.i), datasets: [
+    { label: 'Venta propia (neta)', data: pr.rows.map(r => r.neto), backgroundColor: '#34d399', stack: 'b', borderRadius: 4 },
+    { label: 'Ganancia grupal', data: pr.rows.map(r => r.grup), backgroundColor: '#a78bfa', stack: 'b', borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: tipMoney, legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }, scales: { y: { ...axisMoney, stacked: true }, x: { stacked: true, grid: { display: false } } } } });
+  table('p_tabla', ['Período', 'Tus unidades', 'Neto propio', 'Expertas', 'UP equipo', '%', 'Ganancia grupal', 'Camino A', 'Camino B'],
+    [...pr.rows.map(r => ({ c: [r.i, r.u, money(r.neto), r.n, r.up, pct(r.p), money(r.grup), money(r.A), money(r.B)] })), { c: ['Año', pr.units, '', '', '', '', '', money(pr.totA), money(pr.totB)], cls: 'hl' }]);
+
+  // Precios
+  table('x_unidad', ['Concepto', 'ARS', 'Gs', 'Quién lo cobra'], [
+    { c: ['PVP: lo que paga tu clienta', '$' + nf.format(S.pvp), 'Gs ' + nf.format(Math.round(S.pvp * S.fx)), 'Vos cobrás esto'] },
+    { c: ['PSD: lo que le pagás a tu Distribuidora', '$' + nf.format(S.psd), 'Gs ' + nf.format(Math.round(S.psd * S.fx)), 'Distribuidora'] },
+    { c: ['Tu ganancia (PVP − PSD)', '$' + nf.format(g), 'Gs ' + nf.format(Math.round(g * S.fx)), 'Vos · ' + pct(g / S.pvp) + ' del PVP'], cls: 'hl' },
+    { c: ['PSA: lo que la Distribuidora le paga a arbell', '$' + nf.format(S.psa), 'Gs ' + nf.format(Math.round(S.psa * S.fx)), 'arbell'] },
+    { c: ['Ganancia de la Distribuidora por tu venta', '$' + nf.format(S.psd - S.psa), 'Gs ' + nf.format(Math.round((S.psd - S.psa) * S.fx)), 'Distribuidora · ' + pct((S.psd - S.psa) / S.psd) + ' del PSD'] },
+    { c: ['Envío (lo paga quien recibe)', '$' + nf.format(Math.round(envA)), 'Gs ' + nf.format(S.envioGs), 'Transportadora'] },
+  ], [3]);
+  const prods = [
+    ['Juvenne Capsule Cream (Hyaluron / Niacinamida / Retinol), 50 g', '2332 / 2333 / 2334', 24900],
+    ['Juvenne Advance Crema Contorno de Ojos, 20 g', '2335', null],
+    ['Juvenne Silver Rellenador de Arrugas, 15 g', '2336', null],
+    ['Inspiraciones Vainilla Crazy (F335) / 9pm (M298), 50 ml', 'F335 / M298', 16900],
+    ['Kit Celebración Ámbar Vainilla, edición limitada', 'V007', 19900],
+    ['Crema de Ordeñe 250 g (clásico, dona a APAER)', '—', 12900],
+    ['Candy Pop: Sanitizante / Esponjas / Lip Balm / Gloss / Máscara', 'AC1061 / AC1060 / C920 / C918 / C917', null],
+    ['Intense y Wild & Sexy, emulsión corporal perfumada 100 g', '6138 / 6139', null],
+    ['Babybell Jabón con Glicerina 70 g', '2612', null],
+    ['Diva Elixir Deo Corporal 150 ml', '7018', null],
+  ];
+  table('x_prod', ['Producto', 'Código', 'PVP ARS', 'PVP Gs', 'Tu ganancia'], prods.map(([n, c, p]) => ({ c: [n, c, p ? '$' + nf.format(p) : 'ver PDF de la Distribuidora', p ? 'Gs ' + nf.format(Math.round(p * S.fx)) : '—', p ? money(p * 0.3) : '—'] })), [1]);
+  const uPSD = x => Math.ceil(x / S.psd);
+  table('x_desafios', ['Desafío', 'Meta (PSD)', 'Son aprox.', 'Qué ganás', 'Condición'], [
+    { c: ['Regalo de bienvenida', money(160000), uPSD(160000) + ' u', 'Crema de Ordeñe + ' + money(160000 * g / S.psd) + ' de ganancia', 'Experta nueva, vence 6/1/2027'] },
+    { c: ['Crecé y Ganá · Plata', money(243000), uPSD(243000) + ' u', 'Dispenser 3 L + 4 vasos', 'Pedido en la Actividad Temprana siguiente'] },
+    { c: ['Crecé y Ganá · Oro', money(405000), uPSD(405000) + ' u', '+ Mantel Bag', 'Acumulativo'] },
+    { c: ['Crecé y Ganá · Platino', money(648000), uPSD(648000) + ' u', '+ Bolso Picnic', 'Acumulativo'] },
+    { c: ['Inspiraciones 6x5', 'cada 5 fragancias', '5 u', '1 fragancia gratis (ganancia 72 %)', 'Sin límite'] },
+    { c: ['Líderes en Acción', '650 UP', '200 UP más que P4', 'Set de 4 valijas', '5 Expertas activas'] },
+  ], [3, 4]);
+}
+
+// ---------- Eventos ----------
+document.querySelectorAll('#mainTabs .seg-item').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#mainTabs .seg-item').forEach(x => x.classList.remove('active')); b.classList.add('active');
+  document.querySelectorAll('section[id^=view-]').forEach(s => s.style.display = 'none');
+  el('view-' + b.dataset.tab).style.display = ''; render();
+}));
+document.querySelectorAll('#curTabs .seg-item').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#curTabs .seg-item').forEach(x => x.classList.remove('active')); b.classList.add('active'); S.cur = b.dataset.cur; render();
+}));
+const bind = [['e_u', 'e', 'u'], ['e_env', 'e', 'env'], ['e_unsold', 'e', 'unsold'], ['e_mora', 'e', 'mora'],
+  ['l_n', 'l', 'n'], ['l_perx', 'l', 'perx'], ['l_prop', 'l', 'prop'],
+  ['p_u0', 'p', 'u0'], ['p_inc', 'p', 'inc'], ['p_max', 'p', 'max'], ['p_perx', 'p', 'perx'], ['p_start', 'p', 'start'], ['p_n0', 'p', 'n0'], ['p_n1', 'p', 'n1'],
+  ['x_pvp', null, 'pvp'], ['x_psd', null, 'psd'], ['x_psa', null, 'psa'], ['x_fx', null, 'fx'], ['x_envio', null, 'envioGs']];
+bind.forEach(([id, grp, key]) => el(id).addEventListener('input', ev => {
+  const v = parseFloat(ev.target.value); if (isNaN(v)) return;
+  if (grp) S[grp][key] = v; else S[key] = v; render();
+}));
+render();
+</script>
+</body>
+</html>
